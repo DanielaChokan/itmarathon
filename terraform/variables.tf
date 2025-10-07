@@ -205,3 +205,12 @@ variable "db_subnet_group_name" {
   description = "The name of the subnet group where RDS instance is placed"
   type        = string
 }
+
+################################
+# SSL
+################################
+
+variable "domain_name" {
+  description = "The base domain name for the application"
+  type        = string
+}

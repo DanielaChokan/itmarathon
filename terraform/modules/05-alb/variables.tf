@@ -33,3 +33,8 @@ variable "web_ui_port" {
   description = "Port for Web UI service"
   type        = number
 }
+
+variable "domain_name" {
+  description = "The base domain name for the application"
+  type        = string
+}

@@ -85,4 +85,5 @@ module "alb" {
   security_group_id = module.security_groups.alb_security_group_id
   web_backend_port  = var.web_backend_port
   web_ui_port       = var.web_ui_port
+  domain_name       = var.domain_name
 }

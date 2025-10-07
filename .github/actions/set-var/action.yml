@@ -1,4 +1,4 @@
-name: "Set Deployment Variables"
+name: "set environment variables"
 
 inputs:
   microservice:

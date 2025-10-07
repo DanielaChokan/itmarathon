@@ -45,7 +45,7 @@ subnets = {
 name_prefix       = "app"
 project_name      = "app"
 alb_ingress_cidr  = ["0.0.0.0/0"]
-alb_ingress_ports = [80, 8080]
+alb_ingress_ports = [80, 8080, 443]
 web_backend_port  = 8080
 web_ui_port       = 80
 
@@ -75,3 +75,9 @@ db_engine            = "postgres"
 db_engine_version    = "17.5"
 db_instance_class    = "db.t3.micro"
 db_subnet_group_name = "rds-private-subnet-group"
+
+################################################################################
+# SSL variables
+################################################################################
+
+domain_name = "marathon2025.pp.ua"
