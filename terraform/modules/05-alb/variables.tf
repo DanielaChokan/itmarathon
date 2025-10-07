@@ -38,3 +38,8 @@ variable "domain_name" {
   description = "The base domain name for the application"
   type        = string
 }
+
+variable "certificate_arn" {
+  description = "ACM certificate arn for you domain (manual)"
+  type        = string
+}

@@ -86,4 +86,5 @@ module "alb" {
   web_backend_port  = var.web_backend_port
   web_ui_port       = var.web_ui_port
   domain_name       = var.domain_name
+  certificate_arn   = var.certificate_arn
 }
