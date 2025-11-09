@@ -6,6 +6,7 @@ using Epam.ItMarathon.ApiService.Domain.Shared.ValidationErrors;
 using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;
+using System.Reflection.Metadata;
 
 namespace Epam.ItMarathon.ApiService.Domain.Aggregate.Room
 {
@@ -297,12 +298,12 @@ namespace Epam.ItMarathon.ApiService.Domain.Aggregate.Room
         {
             if (ClosedOn is not null)
             {
-                return Result.Failure<bool, ValidationResult>(new BadRequestError([
+                return Result.Failure<bool, ValidationResult>(new BadRequestError(new[]
+                {
                     new ValidationFailure("room.ClosedOn", "Room is already closed.")
-                ]));
+                }));
             }
-
-            return true;
+            return Result.Success<bool, ValidationResult>(true);
         }
 
         private Result<Room, ValidationResult> SetProperty(string propertyName, Action<Room> setterExpression)
@@ -326,6 +327,29 @@ namespace Epam.ItMarathon.ApiService.Domain.Aggregate.Room
 
             // Call a RoomValidator to validate updated property
             return ValidateProperty(char.ToLowerInvariant(propertyName[0]) + propertyName[1..]);
+        }
+
+        public Result<Room, ValidationResult> DeleteUser(ulong? userId)
+        {
+            // Перевірка чи кімната закрита
+            var roomCanBeModifiedResult = CheckRoomCanBeModified();
+            if (roomCanBeModifiedResult.IsFailure)
+            {
+                return Result.Failure<Room, ValidationResult>(roomCanBeModifiedResult.Error);
+            }
+
+            // Знайти користувача для видалення
+            var userToDelete = Users.FirstOrDefault(user => user.Id == userId);
+            if (userToDelete is null) 
+            {
+                return Result.Failure<Room, ValidationResult>(new NotFoundError([
+                    new ValidationFailure("id", "User with the specified Id was not found in the room.")
+                ]));
+            }
+
+            // Видалити користувача
+            Users.Remove(userToDelete);
+            return this;
         }
 
         private Result<Room, ValidationResult> ValidateProperty(string propertyName)

@@ -1,16 +1,17 @@
 ﻿using AutoMapper;
+using Epam.ItMarathon.ApiService.Api.Dto.ReadDtos;
 using Epam.ItMarathon.ApiService.Api.Dto.Requests.UserRequests;
 using Epam.ItMarathon.ApiService.Api.Dto.Responses.UserResponses;
 using Epam.ItMarathon.ApiService.Api.Endpoints.Extension;
 using Epam.ItMarathon.ApiService.Api.Endpoints.Extension.SwaggerTagExtension;
 using Epam.ItMarathon.ApiService.Api.Filters.Validation;
 using Epam.ItMarathon.ApiService.Application.Models.Creation;
+using Epam.ItMarathon.ApiService.Application.UseCases.User.Commands;
+using Epam.ItMarathon.ApiService.Application.UseCases.User.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using Epam.ItMarathon.ApiService.Api.Dto.ReadDtos;
-using Epam.ItMarathon.ApiService.Application.UseCases.User.Commands;
-using Epam.ItMarathon.ApiService.Application.UseCases.User.Queries;
+using System.Threading;
 
 namespace Epam.ItMarathon.ApiService.Api.Endpoints
 {
@@ -63,7 +64,29 @@ namespace Epam.ItMarathon.ApiService.Api.Endpoints
                 .WithSummary("Create and add user to a room.")
                 .WithDescription("Return created user info.");
 
+            _ = root.MapDelete("{id:long}", DeleteUserWithId)
+                .AddEndpointFilterFactory(ValidationFactoryFilter.GetValidationFactory)
+                .Produces(StatusCodes.Status200OK)
+                .ProducesProblem(StatusCodes.Status400BadRequest)
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .WithSummary("Delete user by id.")
+                .WithDescription("OK if successful.");
+
             return application;
+        }
+
+        private static async Task<IResult> DeleteUserWithId([FromRoute] ulong id, [FromQuery, Required] string? userCode,
+            IMediator mediator, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(new DeleteUserRequest(userCode!, id), cancellationToken);
+            if (result.IsFailure)
+            {
+                return result.Error.ValidationProblem();
+            }
+
+            return Results.Ok();
         }
 
         /// <summary>

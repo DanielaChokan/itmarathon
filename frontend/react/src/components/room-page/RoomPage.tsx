@@ -4,7 +4,7 @@ import type {
   GetParticipantsResponse,
   GetRoomResponse,
   DrawRoomResponse,
-} from "@types/api.ts";
+} from "../../types/api.ts";
 import Loader from "@components/common/loader/Loader.tsx";
 import { useFetch } from "@hooks/useFetch.ts";
 import useToaster from "@hooks/useToaster.ts";
@@ -72,8 +72,43 @@ const RoomPage = () => {
       false,
     );
 
+  const { fetchData: deleteUser, isLoading: isDeleting } =
+    useFetch<void>(
+      {
+        url: "", // URL буде встановлено динамічно
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        onSuccess: () => {
+          showToast("User successfully removed from the room", "success", "large");
+          fetchParticipants();
+        },
+        onError: () => {
+          showToast("Something went wrong. Try again.", "error", "large");
+        },
+      },
+      false,
+    );
+
+  const handleDrawNames = () => {
+    fetchRandomize();
+  };
+
+  const handleDeleteUser = (userId: number) => {
+    deleteUser(undefined, {
+      url: `${BASE_API_URL}/api/users/${userId}?userCode=${userCode}`,
+    });
+  };
+
+  useEffect(() => {
+    if (userCode) {
+      fetchRoomDetails();
+      fetchParticipants();
+    }
+  }, [userCode]);   
+
   const isLoading =
-    isLoadingRoomDetails || isLoadingParticipants || isRandomizing;
+    isLoadingRoomDetails || isLoadingParticipants || isRandomizing ||
+    isDeleting;
 
   if (!userCode) {
     return null;
@@ -83,11 +118,14 @@ const RoomPage = () => {
     <main className="room-page">
       {isLoading ? <Loader /> : null}
 
-      <RoomPageContent
-        participants={participants ?? []}
-        roomDetails={roomDetails ?? ({} as GetRoomResponse)}
-        onDrawNames={() => fetchRandomize()}
-      />
+      {!isLoading && roomDetails && participants ? (
+        <RoomPageContent
+          roomDetails={roomDetails}
+          participants={participants}
+          onDrawNames={handleDrawNames}
+          onDeleteUser={handleDeleteUser}
+        />
+      ) : null}
     </main>
   );
 };

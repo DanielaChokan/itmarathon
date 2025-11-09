@@ -19,6 +19,7 @@ export class CommonModalTemplate extends ParentModalLayout {
   readonly subtitle = input.required<string>();
   readonly cancelButtonText = input<ButtonText>();
   readonly budget = input<number>();
+  readonly showCancelButton = input<boolean>(false);
 
   readonly cancelButtonAction = output<void>();
 

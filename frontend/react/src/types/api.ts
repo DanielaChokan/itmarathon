@@ -47,6 +47,8 @@ export type DrawRoomResponse = {
 
 export type UpdateRoomResponse = Omit<GetRoomResponse, "isFull">;
 
+export type DeleteUserResponse = void;
+
 export type UpdateRoomRequest = Partial<
   Pick<
     GetRoomResponse,

@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 
 import { ApiService } from '../../core/services/api';
@@ -54,6 +54,28 @@ export class UserService {
             MessageType.Success
           );
         }
+      })
+    );
+  }
+
+  public deleteUser(userId: number): Observable<HttpResponse<void>> {
+    return this.#apiService.deleteUser(userId, this.#userCode()).pipe(
+      tap(({ status }) => {
+        if (status === 200) {
+          // Оновлюємо список користувачів після видалення
+          this.getUsers().subscribe();
+          this.#toasterService.show(
+            ToastMessage.SuccessDeleteUser,
+            MessageType.Success
+          );
+        }
+      }),
+      catchError((error) => {
+        this.#toasterService.show(
+          ToastMessage.SomethingWentWrong,
+          MessageType.Error
+        );
+        return throwError(() => error);
       })
     );
   }

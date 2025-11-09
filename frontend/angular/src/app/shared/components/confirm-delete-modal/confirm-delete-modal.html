@@ -1,0 +1,14 @@
+<app-common-modal-template
+  [headerPictureName]="headerPictureName"
+  [headerTitle]="headerTitle"
+  [buttonText]="buttonText"
+  [subtitle]="
+    'Are you sure you want to remove ' +
+    participantName() +
+    ' from the room? This action cannot be undone.'
+  "
+  (buttonAction)="onConfirmDelete()"
+  (cancelAction)="onCancel()"
+  (closeModal)="onCloseModal()"
+>
+</app-common-modal-template>

@@ -8,5 +8,5 @@ export interface UseFetchReturn<T, N = undefined> {
   data: T | null;
   isLoading: boolean;
   isError: boolean;
-  fetchData: (data?: N) => Promise<void>;
+  fetchData: (data?: N, overrideOptions?: Partial<FetchParams<T>>) => Promise<void>;
 }

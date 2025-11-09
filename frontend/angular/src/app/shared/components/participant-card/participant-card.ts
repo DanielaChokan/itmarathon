@@ -39,12 +39,16 @@ export class ParticipantCard {
   readonly showCopyIcon = input<boolean>(false);
   readonly userCode = input<string>('');
   readonly showInfoIcon = input<boolean>(false);
+  readonly showDeleteIcon = input<boolean>(false);
 
   readonly #popup = inject(PopupService);
   readonly #urlService = inject(UrlService);
   readonly #host = inject(ElementRef<HTMLElement>);
   readonly #modalService = inject(ModalService);
   readonly #userService = inject(UserService);
+
+  public readonly iconDelete = IconName.Trash;
+  public readonly ariaLabelDelete = AriaLabel.DeleteUser;
 
   public readonly isCurrentUser = computed(() => {
     const code = this.userCode();
@@ -118,6 +122,16 @@ export class ParticipantCard {
   public onCopyLeave(target: EventTarget | null): void {
     if (target instanceof HTMLElement) {
       this.#popup.hide(target);
+    }
+  }
+
+  public onDeleteClick(): void {
+    if (
+      confirm(
+        `Are you sure you want to remove ${this.fullName()} from the room?`
+      )
+    ) {
+      this.#userService.deleteUser(this.participant().id).subscribe();
     }
   }
 

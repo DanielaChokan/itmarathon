@@ -20,6 +20,28 @@
       background-color: colors.$g-200;
     }
   }
+  
+  // Стилізація для кнопки видалення
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    &:focus-visible {
+      outline: 2px solid colors.$green-500;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
 }
 
 .participant-card-role {

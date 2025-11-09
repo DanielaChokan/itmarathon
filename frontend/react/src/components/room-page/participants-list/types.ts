@@ -1,7 +1,8 @@
-import type { GetParticipantsResponse } from "@types/api.ts";
+import type { GetParticipantsResponse } from "../../../types/api.ts";
 
 export interface ParticipantsListProps {
   participants: GetParticipantsResponse;
+  onDeleteUser: (userId: number) => void;
 }
 
 export interface PersonalInformation {

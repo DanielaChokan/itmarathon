@@ -11,7 +11,7 @@ export function useFetch<T = unknown, N = undefined>(
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchData = async (data?: N) => {
+  const fetchData = async (data?: N, overrideOptions?: Partial<FetchParams<T>>) => {
     abortControllerRef.current?.abort();
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -19,18 +19,28 @@ export function useFetch<T = unknown, N = undefined>(
     setIsLoading(true);
     setIsError(false);
 
+    // Використовуємо overrideOptions якщо вони передані
+    const fetchUrl = overrideOptions?.url || url;
+    const fetchOptions = {
+      ...options,
+      ...overrideOptions,
+      body: data ? JSON.stringify(data) : undefined,
+      signal: controller.signal,
+    };
+
     try {
-      const response = await fetch(url, {
-        ...options,
-        body: JSON.stringify(data),
-        signal: controller.signal,
-      });
+      const response = await fetch(fetchUrl, fetchOptions);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const result: T = await response.json();
+      // Перевіряємо чи є контент у відповіді (для DELETE може бути порожньо)
+      const contentType = response.headers.get("content-type");
+      const result: T = contentType?.includes("application/json")
+        ? await response.json()
+        : (null as T);
+      
       setData(result);
 
       if (onSuccess) {

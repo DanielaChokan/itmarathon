@@ -20,6 +20,7 @@ const RoomPageContent = ({
   participants,
   roomDetails,
   onDrawNames,
+  onDeleteUser,
 }: RoomPageContentProps) => {
   const { userCode } = useParams();
   const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
@@ -102,7 +103,7 @@ const RoomPageContent = ({
       </div>
 
       <div className="room-page-content-row">
-        <ParticipantsList participants={participants} />
+        <ParticipantsList participants={participants} onDeleteUser={onDeleteUser} />
 
         <div className="room-page-content-column">
           {isAdmin || (!isAdmin && isRandomized) ? (
