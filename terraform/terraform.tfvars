@@ -84,4 +84,4 @@ db_subnet_group_name = "rds-private-subnet-group"
 ################################################################################
 
 domain_name = "chokan-marathon.pp.ua"
-certificate_arn = "arn:aws:acm:eu-central-1:309866938078:certificate/70d00877-fd77-4f5b-a145-e21a93b52485"
+certificate_arn = "arn:aws:acm:eu-central-1:309866938078:certificate/d1705e99-3e41-4517-b3d1-88410b08da39"
