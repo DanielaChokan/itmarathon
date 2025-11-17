@@ -13,10 +13,9 @@ export class ConfirmDeleteModal {
   readonly closeModal = output<void>();
   readonly confirmDelete = output<void>();
 
-  public readonly headerPictureName = PictureName.Letter;
+  public readonly headerPictureName = PictureName.Cookie;
   public readonly headerTitle = ModalTitle.RemoveParticipant;
   public readonly buttonText = ButtonText.Remove;
-  public readonly cancelButtonText = ButtonText.Cancel;
 
   public onCloseModal(): void {
     this.closeModal.emit();
@@ -24,9 +23,5 @@ export class ConfirmDeleteModal {
 
   public onConfirmDelete(): void {
     this.confirmDelete.emit();
-  }
-
-  public onCancel(): void {
-    this.closeModal.emit();
   }
 }

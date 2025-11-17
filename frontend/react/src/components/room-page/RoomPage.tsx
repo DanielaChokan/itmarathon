@@ -21,6 +21,8 @@ const RoomPage = () => {
     document.title = ROOM_PAGE_TITLE;
   }, []);
 
+  const shouldFetch = !!userCode;
+
   const {
     data: roomDetails,
     isLoading: isLoadingRoomDetails,
@@ -30,11 +32,14 @@ const RoomPage = () => {
       url: `${BASE_API_URL}/api/rooms?userCode=${userCode}`,
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      onError: () => {
+      onError: (error: Error) => {
+      console.error("Room fetch error:", error);
+      if (error.name !== "AbortError") {
         showToast("Something went wrong. Try again.", "error", "large");
-      },
+      }
     },
-    true,
+    },
+    shouldFetch,
   );
 
   const {
@@ -45,10 +50,13 @@ const RoomPage = () => {
     url: `${BASE_API_URL}/api/users?userCode=${userCode}`,
     method: "GET",
     headers: { "Content-Type": "application/json" },
-    onError: () => {
-      showToast("Something went wrong. Try again.", "error", "large");
+    onError: (error: Error) => {
+      console.error("Room fetch error:", error);
+      if (error.name !== "AbortError") {
+        showToast("Something went wrong. Try again.", "error", "large");
+      }
     },
-  });
+  }, shouldFetch);
 
   const { fetchData: fetchRandomize, isLoading: isRandomizing } =
     useFetch<DrawRoomResponse>(
