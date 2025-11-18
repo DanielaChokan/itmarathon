@@ -122,6 +122,7 @@ namespace Tests.Api.Steps
 
             var roomResponse = await _roomApiClient.CreateRoomAsync(roomRequest);
             _scenarioContext.Set(roomResponse);
+            _scenarioContext.Set(roomResponse.UserCode!, "AdminUserCode");
 
             for (int i = 0; i < 3; i++)
             {
@@ -159,6 +160,33 @@ namespace Tests.Api.Steps
                 TestDataGenerator.GenerateUser());
 
             _scenarioContext.Set(userResponse.UserCode!, "RegularUserCode");
+        }
+
+        [Given("I am a regular user in a room")]
+        public async Task GivenIAmARegularUserInARoom()
+        {
+            var roomRequest = new RoomCreationRequest
+            {
+                Room = TestDataGenerator.GenerateRoom(),
+                AdminUser = TestDataGenerator.GenerateUser()
+            };
+
+            var roomResponse = await _roomApiClient.CreateRoomAsync(roomRequest);
+            _scenarioContext.Set(roomResponse, "RoomResponse");
+            _scenarioContext.Set(roomResponse.UserCode!, "AdminUserCode");
+
+            for (int i = 0; i < 2; i++)
+            {
+                await _apiClient.CreateUserAsync(
+                    roomResponse.Room.InvitationCode!,
+                    TestDataGenerator.GenerateUser());
+            }
+
+            var regularUserResponse = await _apiClient.CreateUserAsync(
+                roomResponse.Room.InvitationCode!,
+                TestDataGenerator.GenerateUser());
+
+            _scenarioContext.Set(regularUserResponse.UserCode!, "RegularUserCode");
         }
 
         [Given("I am a user in a room")]

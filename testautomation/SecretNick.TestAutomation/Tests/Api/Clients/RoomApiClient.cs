@@ -110,5 +110,10 @@ namespace Tests.Api.Clients
             Log.Information("Names drawn, recipient assigned");
             return user;
         }
+
+        public async Task DrawNamesAsync(string userCode)
+        {
+            await DrawRoomAsync(userCode);
+        }
     }
 }
