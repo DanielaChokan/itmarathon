@@ -101,28 +101,43 @@ case "$MICROSERVICE_NAME" in
 esac
 # Form SMM command -added {EXTRA_ENV} to docker run
 
+COMMANDS_JSON=$(cat <<EOF
+{
+  "commands": [
+    "echo \\"Logging in to Docker registry...\\"",
+    "echo \\"${DOCKER_PASSWORD}\\" | docker login -u ${DOCKER_USERNAME} --password-stdin",
+    "echo \\"Deploying ${MICROSERVICE_NAME} from image ${IMAGE_NAME} on port ${PORT}\\"",
+    "docker container rm -f ${CONTAINER_NAME} || true",
+    "docker rmi ${IMAGE_NAME} -f || true",
+    "docker image prune -f",
+    "docker pull ${IMAGE_NAME}",
+    "docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${EXTRA_ENV} --restart always ${IMAGE_NAME}",
+    "docker ps -f name=${CONTAINER_NAME}",
+    "sleep 3",
+    "docker logs ${CONTAINER_NAME} --tail 20"
+  ]
+}
+EOF
+)
+
+
+###
+# 4. Send command to EC2 via SSM
+###
+
+echo "Sending SSM command..."
+
 COMMAND_ID=$(aws ssm send-command \
   --instance-ids "${INSTANCE_ID}" \
   --document-name "AWS-RunShellScript" \
-  --parameters "commands=[
-    'echo \"Logging in to Docker registry...\"',
-    'echo "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USERNAME} --password-stdin',
-    'echo "Login complete, deploying container for ${MICROSERVICE_NAME} from image ${IMAGE_NAME} on port ${PORT}"',
-    'docker container rm -f ${CONTAINER_NAME} || true',
-    'docker rmi ${IMAGE_NAME} -f || true',
-    'docker image prune -f',
-    'docker pull ${IMAGE_NAME}',
-    'docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${EXTRA_ENV} --restart always ${IMAGE_NAME}',
-    'docker ps -f name=${CONTAINER_NAME}',
-    'sleep 3',
-    'docker logs ${CONTAINER_NAME} --tail 20'
-  ]" \
+  --parameters "$COMMANDS_JSON" \
   --query "Command.CommandId" \
   --output text)
 
+echo "Command ID: $COMMAND_ID"
+
 sleep 5
 
-echo "Command ID: $COMMAND_ID"
 echo "Waiting for deployment to complete..."
 
 for i in {1..12}; do
