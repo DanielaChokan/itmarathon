@@ -50,6 +50,6 @@ jobs:
     uses: ./.github/workflows/deploy-jobs.yml
     with:
       microservice: dotnet
-      image_tag: latest
+      image_tag: ${{ github.sha }}
     secrets: inherit  
   

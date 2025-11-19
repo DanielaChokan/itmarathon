@@ -47,5 +47,5 @@ jobs:
     uses: ./.github/workflows/deploy-jobs.yml
     with:
       microservice: angular
-      image_tag: latest
+      image_tag: ${{ github.sha }}
     secrets: inherit  

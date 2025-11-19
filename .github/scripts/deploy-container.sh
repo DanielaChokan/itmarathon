@@ -14,6 +14,13 @@ done
 IMAGE_NAME="${REPO}:${IMAGE_TAG}"
 echo "Using Docker image: ${IMAGE_NAME}"
 
+# Convert full SHA to short SHA (first 7 characters) if needed
+if [ ${#IMAGE_TAG} -eq 40 ]; then
+  SHORT_TAG="${IMAGE_TAG:0:7}"
+  IMAGE_NAME="${REPO}:${SHORT_TAG}"
+  echo "Converted full SHA to short SHA: ${SHORT_TAG}"
+fi
+
 EXTRA_ENV=""
 DB_PORT=${DB_PORT:-5432}
 
@@ -99,9 +106,10 @@ COMMAND_ID=$(aws ssm send-command \
   --document-name "AWS-RunShellScript" \
   --parameters "commands=[
     'echo \"Logging in to Docker registry...\"',
-    'echo \"${DOCKER_PASSWORD}\" | docker login -u ${DOCKER_USERNAME} --password-stdin',
-    'echo \"Login complete, deploying container for ${MICROSERVICE_NAME} from image ${IMAGE_NAME} on port ${PORT}\"',
+    'echo "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USERNAME} --password-stdin',
+    'echo "Login complete, deploying container for ${MICROSERVICE_NAME} from image ${IMAGE_NAME} on port ${PORT}"',
     'docker container rm -f ${CONTAINER_NAME} || true',
+    'docker rmi ${IMAGE_NAME} -f || true',
     'docker image prune -f',
     'docker pull ${IMAGE_NAME}',
     'docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${EXTRA_ENV} --restart always ${IMAGE_NAME}',
