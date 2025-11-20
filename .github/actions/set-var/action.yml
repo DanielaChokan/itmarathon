@@ -1,8 +1,8 @@
-name: "set environment variables"
+name: "Set Deployment Variables"
 
 inputs:
   microservice:
-    description: "Target microservice (react, angular, dotnet, grafana, prometheus)"
+    description: "Target microservice (react, angular, dotnet)"
     required: true
 
   docker_hub_username:
@@ -53,15 +53,9 @@ runs:
                             --query "LoadBalancers[0].DNSName" \
                             --output text || echo "localhost:8080")
         echo "got: $ALB_DNS"
-
-        TEMP_URL="https://backend.${DOMAIN_NAME}"
-        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "${TEMP_URL}/api/system/info" || true)
-
-        if [[ "$RESPONSE" == "200" ]] ; then
-          BASE_API_URL="$TEMP_URL"
-        else
-          BASE_API_URL="http://${ALB_DNS}"
-        fi
+        # Force HTTPS backend domain; remove HTTP fallback to ALB DNS to avoid Mixed Content.
+        BASE_API_URL="https://backend.${DOMAIN_NAME}"
+        echo "Forced BASE_API_URL to $BASE_API_URL"
 
         echo "BASE_API_URL=$BASE_API_URL"
         echo "BASE_API_URL=$BASE_API_URL" >> $GITHUB_ENV
@@ -78,7 +72,7 @@ runs:
         echo "CONTEXT=frontend/react" >> $GITHUB_ENV
         echo "DOCKERFILE=frontend/react/Dockerfile" >> $GITHUB_ENV
         echo "REPO=${{ inputs.docker_hub_username }}/react" >> $GITHUB_ENV
-        
+
         echo "Updating BASE_API_URL in React project"
         jq --arg url "$BASE_API_URL" '.environment.backendApiUrl = $url' frontend/react/config.json > tmp.config.json && mv tmp.config.json frontend/react/config.json
         cat frontend/react/config.json
@@ -98,7 +92,6 @@ runs:
         jq --arg url "$BASE_API_URL" '.environment.backendApiUrl = $url' frontend/angular/config.json > tmp.config.json && mv tmp.config.json frontend/angular/config.json
         cat frontend/angular/config.json
 
-
     - name: Set Dotnet Environment
       if: ${{ inputs.microservice == 'dotnet' }}
       shell: bash
@@ -109,7 +102,7 @@ runs:
         echo "CONTEXT=backend/ApiService" >> $GITHUB_ENV
         echo "DOCKERFILE=backend/ApiService/Dockerfile" >> $GITHUB_ENV
         echo "REPO=${{ inputs.docker_hub_username }}/dotnet" >> $GITHUB_ENV
-    
+
     - name: Set Grafana Environment
       if: ${{ inputs.microservice == 'grafana' }}
       shell: bash
