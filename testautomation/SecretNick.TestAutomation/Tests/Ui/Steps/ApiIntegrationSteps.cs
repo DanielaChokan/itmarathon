@@ -1,8 +1,11 @@
-﻿using Reqnroll;
+﻿using Microsoft.Playwright;
+using Reqnroll;
 using Shouldly;
 using Tests.Api.Clients;
 using Tests.Api.Models.Requests;
+using Tests.Api.Models.Responses;
 using Tests.Common.TestData;
+using Tests.Core.Configuration;
 
 namespace Tests.Ui.Steps
 {
@@ -10,8 +13,12 @@ namespace Tests.Ui.Steps
     public class ApiIntegrationSteps(
         ScenarioContext scenarioContext,
         RoomApiClient roomApiClient,
-        UserApiClient userApiClient)
+        UserApiClient userApiClient,
+        IPage page,
+        IConfigurationManager configurationManager) : UiStepsBase(page)
     {
+        private readonly IPage _page = page;
+        private readonly IConfigurationManager _configurationManager = configurationManager;
         [Given("a room exists via API")]
         public async Task GivenARoomExistsViaAPI()
         {
@@ -83,7 +90,7 @@ namespace Tests.Ui.Steps
             await WhenIAddParticipantsViaAPI(1);
         }
 
-            [When("all users draw names via API")]
+        [When("all users draw names via API")]
         public async Task WhenAllUsersDrawNamesViaAPI()
         {
             var adminCode = scenarioContext.Get<string>("AdminCode");
@@ -113,6 +120,22 @@ namespace Tests.Ui.Steps
 
             givers.Count.ShouldBe(users.Count, "Each participant should be a giver");
             receivers.Count.ShouldBe(users.Count, "Each participant should receive a gift");
+        }
+
+        [When("I navigate to room page with regular user code")]
+        public async Task WhenINavigateToRoomPageWithRegularUserCode()
+        {
+            var invitationCode = scenarioContext.Get<string>("InvitationCode");
+
+            var regularUser = TestDataGenerator.GenerateUser();
+            var userResponse = await userApiClient.CreateUserAsync(invitationCode, regularUser);
+
+            scenarioContext.Set(userResponse.UserCode!, "RegularUserCode");
+
+            var regularUserCode = userResponse.UserCode!;
+            var baseUrl = _configurationManager.Settings.BaseUrls.Ui;
+            await _page.GotoAsync($"{baseUrl}/room/{regularUserCode}");
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }
 }

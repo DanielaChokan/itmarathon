@@ -42,9 +42,9 @@ const ParticipantCard = ({
           <InfoButton infoMessage={adminInfo} />
         ) : null}
 
-        {isCurrentUserAdmin && !isCurrentUser && !isAdmin ? (
+        {isCurrentUserAdmin && !isCurrentUser ? (
           <IconButton
-            iconName="trash"
+            iconName="cross"
             onClick={onDeleteButtonClick!}
           />
         ) : null}

@@ -19,7 +19,6 @@ export const enum IconName {
   Close = 'close',
   Link = 'link',
   Info = 'info',
-  Trash = 'trash',
 }
 
 export const enum AriaLabel {
@@ -188,6 +187,7 @@ export const enum PictureName {
   StNick = 'st-nick',
   Cookie = 'cookie',
   Invitation = 'invitation',
+  Tree = 'tree',
 }
 
 export const enum FormTitle {

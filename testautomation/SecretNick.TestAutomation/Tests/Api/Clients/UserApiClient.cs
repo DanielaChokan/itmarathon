@@ -73,5 +73,21 @@ namespace Tests.Api.Clients
                 user.FirstName, user.LastName);
             return user;
         }
+
+        public async Task<IAPIResponse> DeleteUserAsync(long userId, string userCode)
+        {
+            var url = $"/api/users/{userId}?userCode={userCode}";
+            var requestInfo = $"DELETE {url}";
+
+            Log.Information("Deleting user via API: {RequestInfo}", requestInfo);
+
+            var response = await ApiContext.DeleteAsync(url);
+
+            await ValidateResponseAsync(response, 200, requestInfo);
+
+            Log.Information("User deleted successfully: UserId={UserId}", userId);
+
+            return response;
+        }
     }
 }

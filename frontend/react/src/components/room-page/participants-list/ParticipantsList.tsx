@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import ParticipantCard from "@components/common/participant-card/ParticipantCard";
 import ParticipantDetailsModal from "@components/common/modals/participant-details-modal/ParticipantDetailsModal";
+import ConfirmDeleteModal from "@components/common/modals/confirm-delete-modal/ConfirmDeleteModal";
 import type { Participant } from "../../../types/api.ts";
 import {
   MAX_PARTICIPANTS_NUMBER,
@@ -14,6 +15,8 @@ const ParticipantsList = ({ participants, onDeleteUser }: ParticipantsListProps)
   const { userCode } = useParams();
   const [selectedParticipant, setSelectedParticipant] =
     useState<PersonalInformation | null>(null);
+  const [participantToDelete, setParticipantToDelete] = 
+    useState<{ id: number; name: string } | null>(null);
 
   const admin = participants?.find((participant) => participant?.isAdmin);
   const restParticipants = participants?.filter(
@@ -36,10 +39,18 @@ const ParticipantsList = ({ participants, onDeleteUser }: ParticipantsListProps)
 
   const handleDeleteButtonClick = (participant: Participant) => {
     const fullName = `${participant.firstName} ${participant.lastName}`;
-    
-    if (window.confirm(`Are you sure you want to remove ${fullName} from the room?`)) {
-      onDeleteUser(participant.id);
+    setParticipantToDelete({ id: participant.id, name: fullName });
+  };
+
+  const handleConfirmDelete = () => {
+    if (participantToDelete) {
+      onDeleteUser(participantToDelete.id);
+      setParticipantToDelete(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setParticipantToDelete(null);
   };
 
   const handleModalClose = () => setSelectedParticipant(null);
@@ -104,6 +115,15 @@ const ParticipantsList = ({ participants, onDeleteUser }: ParticipantsListProps)
             isOpen={!!selectedParticipant}
             onClose={handleModalClose}
             personalInfoData={selectedParticipant}
+          />
+        ) : null}
+
+        {participantToDelete ? (
+          <ConfirmDeleteModal
+            isOpen={!!participantToDelete}
+            onClose={handleCancelDelete}
+            onConfirm={handleConfirmDelete}
+            participantName={participantToDelete.name}
           />
         ) : null}
       </div>

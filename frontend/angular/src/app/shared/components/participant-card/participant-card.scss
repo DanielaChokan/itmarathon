@@ -18,23 +18,16 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-
-  .pill {
-    font-size: 14px;
-    margin: 0 3px;
-
-    &:has(+ app-icon-button) {
-      margin: 0 21px;
-    }
-  }
+  gap: 8px;
 
   app-icon-button:not(:first-child) {
     position: relative;
+    padding-left: 8px;
     &::before {
       content: '';
       position: absolute;
       top: 50%;
-      left: -4px;
+      left: 0;
       transform: translateY(-50%);
       width: 1px;
       height: 40px;

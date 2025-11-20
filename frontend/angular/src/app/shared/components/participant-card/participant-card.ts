@@ -24,6 +24,7 @@ import { ParticipantInfoModal } from '../../../room/components/participant-info-
 import { ModalService } from '../../../core/services/modal';
 import { getPersonalInfo } from '../../../utils/get-personal-info';
 import { UserService } from '../../../room/services/user';
+import { ConfirmDeleteModal } from '../confirm-delete-modal/confirm-delete-modal';
 import type { User } from '../../../app.models';
 
 @Component({
@@ -47,9 +48,6 @@ export class ParticipantCard {
   readonly #modalService = inject(ModalService);
   readonly #userService = inject(UserService);
 
-  public readonly iconDelete = IconName.Trash;
-  public readonly ariaLabelDelete = AriaLabel.DeleteUser;
-
   public readonly isCurrentUser = computed(() => {
     const code = this.userCode();
     return !!code && this.participant()?.userCode === code;
@@ -62,6 +60,8 @@ export class ParticipantCard {
   public readonly ariaLabelCopy = AriaLabel.ParticipantLink;
   public readonly iconInfo = IconName.Info;
   public readonly ariaLabelInfo = AriaLabel.Info;
+  public readonly iconDelete = IconName.Close;
+  public readonly ariaLabelDelete = AriaLabel.DeleteUser;
 
   @HostBinding('tabindex') tab = 0;
   @HostBinding('class.list-row') rowClass = true;
@@ -126,13 +126,22 @@ export class ParticipantCard {
   }
 
   public onDeleteClick(): void {
-    if (
-      confirm(
-        `Are you sure you want to remove ${this.fullName()} from the room?`
-      )
-    ) {
-      this.#userService.deleteUser(this.participant().id).subscribe();
-    }
+    this.#modalService.openWithResult(
+      ConfirmDeleteModal,
+      {
+        participantName: this.fullName(),
+      },
+      {
+        closeModal: () => this.#modalService.close(),
+        confirmDelete: () => {
+          this.#userService.deleteUser(this.participant().id).subscribe({
+            complete: () => {
+              this.#modalService.close();
+            },
+          });
+        },
+      }
+    );
   }
 
   #openModal(): void {

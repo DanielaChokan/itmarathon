@@ -194,5 +194,109 @@ namespace Tests.Ui.Pages
         {
             return date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
         }
+
+        public async Task<List<ILocator>> GetDeleteButtonsAsync()
+        {
+            // Angular: button with aria-label="Delete user from room"
+            var angularButtons = await Page.Locator("button[aria-label='Delete user from room']").AllAsync();
+            
+            // React: button:has-text('Remove') or button with class containing 'delete'
+            var reactButtons = await Page.Locator("button:has-text('Remove'), button[class*='delete' i]").AllAsync();
+
+            return angularButtons.Count > 0 ? angularButtons.ToList() : reactButtons.ToList();
+        }
+
+        public async Task<string> GetParticipantNameForDeleteButton(int index)
+        {
+            // Angular: li[app-participant-card] with .li-content
+            var angularParticipant = Page.Locator("li[app-participant-card]").Nth(index);
+            var reactParticipant = Page.Locator("[class*='participant'], [class*='user-item']").Nth(index);
+
+            var nameLocator = await angularParticipant.CountAsync() > 0
+                ? angularParticipant.Locator(".li-content").First
+                : reactParticipant.Locator("[class*='name']").First;
+
+            return await nameLocator.TextContentAsync() ?? string.Empty;
+        }
+
+        public async Task ClickDeleteButtonAsync(int index)
+        {
+            var buttons = await GetDeleteButtonsAsync();
+            if (buttons.Count > index)
+            {
+                await buttons[index].ClickAsync();
+            }
+        }
+
+        public async Task ConfirmDeletionAsync()
+        {
+            // Angular: button with text "Remove"
+            var confirmButton = Page.Locator("button:has-text('Remove'), button:has-text('Delete'), button:has-text('Confirm'), button:has-text('Yes')");
+            await confirmButton.First.ClickAsync();
+            
+            // Wait a bit for the deletion to process
+            await Page.WaitForTimeoutAsync(500);
+        }
+
+        public async Task CancelDeletionAsync()
+        {
+            // In Angular, the confirm delete modal doesn't have a Cancel button
+            // User can only close it using the close button (X icon) with aria-label="Close"
+            var closeButton = Page.Locator("button[aria-label='Close'], .modal__button-close");
+            await closeButton.First.ClickAsync();
+            
+            await Page.WaitForTimeoutAsync(500);
+        }
+
+        public async Task<bool> IsToastVisibleAsync(string type)
+        {
+            // Angular: app-message with class="toast" inside app.html
+            // The app-message has class "message" and the wrapper has "toast"
+            var toastSelector = ".toast app-message.message, app-message.toast";
+
+            var toast = Page.Locator(toastSelector);
+
+            try
+            {
+                await toast.First.WaitForAsync(new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 5000
+                });
+                return await toast.First.IsVisibleAsync();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<string> GetToastTextAsync()
+        {
+            var toast = Page.Locator(".toast app-message.message, app-message.toast").First;
+            return await toast.TextContentAsync() ?? string.Empty;
+        }
+
+        public async Task<List<string>> GetAllParticipantNamesAsync()
+        {
+            // Angular: .li-content inside li[app-participant-card]
+            var angularNames = Page.Locator("li[app-participant-card] .li-content");
+            var reactNames = Page.Locator("[class*='participant'] [class*='name'], [class*='user'] [class*='name']");
+
+            var locator = await angularNames.CountAsync() > 0 ? angularNames : reactNames;
+            var count = await locator.CountAsync();
+            var names = new List<string>();
+
+            for (int i = 0; i < count; i++)
+            {
+                var name = await locator.Nth(i).TextContentAsync();
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    names.Add(name.Trim());
+                }
+            }
+
+            return names;
+        }
     }
 }

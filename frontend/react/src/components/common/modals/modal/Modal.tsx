@@ -14,6 +14,7 @@ const Modal = ({
   isOpen = false,
   onClose,
   onConfirm,
+  confirmButtonText = "Go Back to Room",
   children,
 }: ModalProps) => {
   useEffect(() => {
@@ -45,7 +46,7 @@ const Modal = ({
 
         <div className="modal__back-button">
           <Button size="medium" width={225} onClick={onConfirm}>
-            Go Back to Room
+            {confirmButtonText}
           </Button>
         </div>
       </div>
